@@ -1,0 +1,296 @@
+!pip install pytesseract
+!apt install tesseract-ocr
+!pip install openpyxl
+from openpyxl import Workbook
+from PIL import Image
+from pytesseract import image_to_string
+import pytesseract
+import numpy as np
+import pandas as pd
+import PIL
+# from PIL import Image, ImageFilter, ImageEnhance
+import cv2
+# import colorsys
+pytesseract.pytesseract.tesseract_cmd = "C:/Program Files (x86)/Tesseract-OCR/tesseract.exe"
+im =Image.open("C:/Users/hp/OneDrive/Desktop/ilovepdf_pages-to-jpg/2023-EROLLGEN-U05-56-DraftRoll-Revision1-ENG-1-WI[1]_page-0003.jpg")
+basewidth = 1700
+wpercent = (basewidth / float(im.size[0]))
+hsize = int((float(im.size[1]) * float(wpercent)))
+imz = im.resize((basewidth, hsize),Image.LANCZOS)
+im = cv2.bilateralFilter(np.array(imz,dtype=np.uint8),9,75,75)
+imb = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+ims  = Image.fromarray(imb)
+import cv2
+import numpy as np
+
+# Convert PIL image to numpy array
+im_array = np.array(imz)
+
+# Convert the image to grayscale using cv2.cvtColor
+im_gray = cv2.cvtColor(im_array, cv2.COLOR_BGR2GRAY)
+
+# Apply adaptive threshold
+im_thresholded = cv2.adaptiveThreshold(im_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 15)
+
+# Convert the thresholded image back to PIL Image object
+im = Image.fromarray(im_thresholded)
+
+# Display or save the result
+im.show()  # To display the image
+# im_thresholded_pil.save("thresholded_image.jpg")  # To save the image
+im
+#method 1 
+import numpy as np
+#initial coordinates of name, guardian's relation and name,house number,age,gender.
+#Pls edit and change by hit and try like we did in first page extraction
+def image_text(x,crop_rectangle_nm = (112,275, 778, 530)):
+    im = Image.open(x)
+    # im = im.resize((3000, 3882), PIL.Image.LANCZOS)
+    im = cv2.bilateralFilter(np.array(im, dtype= np.uint8),9,75,75)
+    im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+    im = cv2.adaptiveThreshold(np.array(im,dtype=np.uint8), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 15)
+    im = Image.fromarray(im)
+    countt = 1
+    jj = []
+    cropped_im_n = im.crop(crop_rectangle_nm)
+    c_n = image_to_string(cropped_im_n,config='-c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzQWERTYUIOPASDFGHJKLZXCVBNM --psm 6')
+    details = c_n.splitlines()
+#             print(details)
+    for i in details:
+        if len(i)>0:
+            if len(i.split(":"))>1:
+                jj.append(i)
+    if len(jj)==4:
+
+        for i in range(0,10):
+            for j in range(0,3):
+                kk = []
+
+
+                cropped_im_nm = im.crop(crop_rectangle_nm)
+                c_nm = image_to_string(cropped_im_nm,config='-c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzQWERTYUIOPASDFGHJKLZXCVBNM --psm 6')
+                details = c_nm.splitlines()
+    #             print(details)
+                for i in details:
+                    if len(i)>0:
+                        if len(i.split(":"))>1:
+                            kk.append(i)
+#                 print(kk)
+                if len(kk)==4:
+                    countt+=1
+                    file_name.append(x+str(countt))
+                    n = kk[0].strip().split(":")[1]
+                    f = kk[1].strip().split(":")[1]
+                    h = kk[2].strip().split(":")[1]
+                    mm = kk[3].strip().split(":")
+                    a = mm[1].strip().split(" ")[0]
+                    g = mm[2].strip()
+                    gr = kk[1].strip().split(":")[0]
+                    name.append(n)
+                    father.append(f)
+                    hno.append(h)
+                    age.append(a)
+                    gen.append(g)
+                    grel.append(gr)
+
+
+
+    # Find distance between same category horizontally.
+    # For example find distance between starting coordinate of first box NAME and starting coordinate of secnd box NAME on right
+    # Make sure we find distance from starting point. Distance should be same for 2nd and 3rd box horizontally as well as for every 4 other value, such as age, sex etc
+                crop_rectangle_nm = tuple(np.add(crop_rectangle_nm, (911, 0,911,0)))
+    # Find ditance between third and first box. Which should be 3 times above found distance
+
+            crop_rectangle_nm = tuple(np.subtract(crop_rectangle_nm, (2733, 0,2733,0)))
+
+    # Find distance between same category vertically.
+    # For example find distance between starting coordinate of first box NAME and starting coordinate of secnd box NAME down
+    # Distance should be same for all 10 boxes vertically as well as for every 4 other value, such as age, sex etc
+            crop_rectangle_nm = tuple(np.add(crop_rectangle_nm, (0, 323,0,323)))
+
+    else:
+        return image_text_2(im,x)
+
+
+    return name,father,hno,age,gen,file_name,grel
+
+
+
+#method 2
+crop_rectangle_nm = (40,175,730,400)
+  im = Image.open("C:/Users/hp/OneDrive/Desktop/ilovepdf_pages-to-jpg/2023-EROLLGEN-U05-56-DraftRoll-Revision1-ENG-1-WI[1]_page-0003.jpg")
+  im = im.resize((3000, 3882), PIL.Image.LANCZOS)
+  im = cv2.bilateralFilter(np.array(im, dtype= np.uint8),9,75,75)
+  im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+  im = cv2.adaptiveThreshold(np.array(im,dtype=np.uint8), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 15)
+  im = Image.fromarray(im)
+  countt = 1
+  jj = []
+  cropped_im_n = im.crop(crop_rectangle_nm)
+  c_n = image_to_string(cropped_im_n,config='-c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzQWERTYUIOPASDFGHJKLZXCVBNM:1234567890 --psm 6')
+  details = c_n.splitlines()
+  print(details,"hello")
+  for i in details:
+      if len(i)>0:
+          if len(i.split(":"))>1:
+              jj.append(i)
+  # print(jj)
+  if len(jj)==4:
+    for ii in range(0,10):
+      print("this is ii",ii)
+      for j in range(0,3):
+        x_upper = 40+960*j
+        x_lower = 730+960*j
+        y_upper = 175+368*ii
+        y_lower = 400+368*ii
+        # print(type(x_upper))
+        crop_rectangle_nm = (x_upper,y_upper,x_lower,y_lower)
+        kk = []
+        cropped_im_nm = im.crop(crop_rectangle_nm)
+        print(cropped_im_nm,(x_upper,y_upper,x_lower,y_lower))
+        c_nm = image_to_string(cropped_im_nm,config='-c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzQWERTYUIOPASDFGHJKLZXCVBNM:123456789 --psm 6')
+        details = c_nm.splitlines()
+  #             print(details)
+        for i in details:
+          if len(i)>0:
+            if len(i.split(":"))>1:
+                kk.append(i)
+                # print(kk,"yello")
+        if len(kk)==4:
+            try:
+              countt+=1
+              # file_name.append(x+str(countt))
+              n = kk[0].strip().split(":")[1]
+              f = kk[1].strip().split(":")[1]
+              h = kk[2].strip().split(":")[1]
+              print(kk,"this is kk")
+              mm = kk[3].strip().split(":")
+              a = mm[1].strip().split(" ")[0]
+              g = mm[2].strip()
+              gr = kk[1].strip().split(":")[0]
+            except:
+               pass
+            name.append(n)
+            father.append(f)
+            hno.append(h)
+            age.append(a)
+            gen.append(g)
+            grel.append(gr)
+            # print(name,father,age,gen,grel)
+
+
+def image_text11(x,crop_rectangle_nm=(40,175,730,400)):
+  im = Image.open(x)
+  im = im.resize((3000, 3882), PIL.Image.LANCZOS)
+  im = cv2.bilateralFilter(np.array(im, dtype= np.uint8),9,75,75)
+  im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+  im = cv2.adaptiveThreshold(np.array(im,dtype=np.uint8), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 15)
+  im = Image.fromarray(im)
+  countt = 1
+  jj = []
+  cropped_im_n = im.crop(crop_rectangle_nm)
+  c_n = image_to_string(cropped_im_n,config='-c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzQWERTYUIOPASDFGHJKLZXCVBNM:1234567890 --psm 6')
+  details = c_n.splitlines()
+  # print(details),"hekko"
+  for i in details:
+      if len(i)>0:
+          if len(i.split(":"))>1:
+              jj.append(i)
+  # print(jj)
+  if len(jj)==4:
+    for ii in range(0,10):
+      print("this is i")
+      for j in range(0,3):
+        x_upper = 40+960*j
+        x_lower = 730+960*j
+        y_upper = 175+368*ii
+        y_lower = 400+368*ii
+        # print(type(x_upper))
+        crop_rectangle_nm = (x_upper,y_upper,x_lower,y_lower)
+        kk = []
+        cropped_im_nm = im.crop(crop_rectangle_nm)
+        c_nm = image_to_string(cropped_im_nm,config='-c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzQWERTYUIOPASDFGHJKLZXCVBNM:123456789 --psm 6')
+        details = c_nm.splitlines()
+  #             print(details)
+        for i in details:
+          if len(i)>0:
+            if len(i.split(":"))>1:
+                kk.append(i)
+  #               print(kk)
+        if len(kk)==4:
+          try:
+            countt+=1
+            # file_name.append(x+str(countt))
+            n = kk[0].strip().split(":")[1]
+            f = kk[1].strip().split(":")[1]
+            h = kk[2].strip().split(":")[1]
+            mm = kk[3].strip().split(":")
+            a = mm[1].strip().split(" ")[0]
+            g = mm[2].strip()
+            gr = kk[1].strip().split(":")[0]
+          except:
+            pass
+          name.append(n)
+          father.append(f)
+          hno.append(h)
+          age.append(a)
+          gen.append(g)
+          grel.append(gr)
+    return name,father,hno,age,gen,grel
+import glob
+#Getting all page 1
+page_1 = glob.glob('C:/Users/hp/OneDrive/Desktop/ilovepdf_pages-to-jpg/*page-0001.jpg')
+print(page_1)
+#Getting all page 2
+page_2 = glob.glob('C:/Users/hp/OneDrive/Desktop/ilovepdf_pages-to-jpg/*page-0002.jpg')
+
+#Getting all pages
+page_all = glob.glob('C:/Users/hp/OneDrive/Desktop/ilovepdf_pages-to-jpg/*.jpg')
+print(page_all)
+def split(a, n):
+    k, m = divmod(len(a), n)
+    return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
+page_fin_split =  list(split(page_fin, 1))
+count = 1
+count_sem = 1
+for img in page_fin_split[count-1:]:
+    name = []
+    father = []
+    hno = []
+    age = []
+    gen = []
+    grel = []
+    file_name = []
+    for j in img:
+        n,f,h,a,g,gr = image_text11(j)
+
+        print("page_"+str(count_sem))
+        count_sem+=1
+
+    df = pd.DataFrame(np.column_stack([n,gr, f, h,a,g]),
+                               columns=['name','g_relation', 'guardian', 'hno','age','gen'])
+    df.to_excel(str(count)+"kush.xlsx",index = False)
+    print(count)
+    count+=1
+import os
+import subprocess
+
+# Define the path to the xlsx file
+xlsx_file_path = "1kush.xlsx"
+
+# Check if the file exists
+if os.path.exists(xlsx_file_path):
+    # Open the xlsx file using the default application
+    subprocess.run(["start", xlsx_file_path], shell=True)
+else:
+    print(f"The file {xlsx_file_path} does not exist.")
+import os
+os.environ["TESSDATA_PREFIX"] = "C:\\Program Files (x86)\\Tesseract-OCR"
+
+
+
+
+
+
+
+
